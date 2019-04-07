@@ -63,7 +63,8 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
                         }
                         else
                         {
-                            //delete_dir
+							deleteAdditionalItems(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
+                            //delete_dir 
                         }
 
 
