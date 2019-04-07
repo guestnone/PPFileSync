@@ -96,3 +96,48 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
     }
     closedir(dest);
 }
+
+void copyPasteElements(char* source_path, char* destination_path,int recurency)
+{
+    DIR* src = opendir(source_path);
+    struct dirent *file;
+
+     while(file = readdir(src))
+    {
+        if(file->d_type==DT_DIR)
+        {
+            if(recurency == 1)
+            {
+                if( !( strcmp( file->d_name, "." ) == 0 || strcmp( file->d_name, "..") == 0 ) )
+                {
+                        if(!element_exist (setElementPath(file->d_name,destination_path)))
+                        {
+                            printf("creating dir: %s\n",file->d_name);
+                            //screate dir
+                            copyPasteElements(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
+                        }
+                        else{
+                            printf("dir exist: %s\n",file->d_name);
+                        }
+
+                }
+            }
+        }
+        else
+        {
+            //if( !( strcmp( file->d_name, "." ) == 0 || strcmp( file->d_name, "..") == 0 ) )
+            if(!element_exist (setElementPath(file->d_name,destination_path)) )
+            {
+                //dcopy paste file
+                printf("copying file: %s\n",file->d_name);
+            }
+            else
+            {
+                printf("file is good: %s\n",file->d_name);
+            }
+
+        }
+
+    }
+    closedir(src);
+}
