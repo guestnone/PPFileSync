@@ -3,7 +3,9 @@
 //
 #pragma once
 
-enum
+#include "PPFSPrerequisites.h"
+
+typedef enum
 {
 	ReadOnly,
 	WriteOnly,
@@ -12,14 +14,12 @@ enum
 
 int createFile(char* path, FileMode mode);
 
-inline int removeFile(char* path);
+int copyDataFromPath(char* sourcePath, char* destPath, unsigned int fileSizeThreshold);
 
-int copyDataFromPath(char* sourcePath, char* destPath);
-
-int copyDataFromFileDesc(int sourceFd, int destFd);
-
-inline int closeFileDesc(int fd);
+int copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshold);
 
 int openFile(char* path, FileMode mode);
 
+int removeFile(char* path);
 
+int closeFileDesc(int fd);

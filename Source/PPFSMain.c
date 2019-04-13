@@ -1,4 +1,7 @@
 #include "PPFSPrerequisites.h"
+#include "PPFSBase.h"
+#include "PPFSScanner.h"
+#include "PPFSSynchronizer.h"
 
 volatile bool gProgramRunning = true;
 

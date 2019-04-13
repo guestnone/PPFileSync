@@ -3,22 +3,21 @@
 //
 
 #pragma once
+#include "PPFSPrerequisites.h"
 
-#define LOGERR(text) syslog(LOG_ERR, text);
-#define LOGINFO(text) syslog(LOG_INFO, text);
-#define LOGNOTICE(text) syslog(LOG_NOTICE, text);
-#define LOGFATAL(text) syslog(LOG_CRIT, text);
+#define LOGERR(...) syslog(LOG_ERR, __VA_ARGS__);
+#define LOGINFO(...) syslog(LOG_INFO, __VA_ARGS__);
+#define LOGNOTICE(...) syslog(LOG_NOTICE, __VA_ARGS__);
+#define LOGFATAL(...) syslog(LOG_CRIT, __VA_ARGS__);
 
-inline void startUpSysLog(void);
+void startUpSysLog(void);
 
-inline void shutDownSysLog(void);
-
-int daemonize();
+void shutDownSysLog(void);
 
 pid_t forkProcess(void);
 
-inline void closeStandardConsole(void);
+void closeStandardConsole(void);
 
-inline void resetToMainDirectory(void);
+void resetToMainDirectory(void);
 
 pid_t switchToNewSession(void);

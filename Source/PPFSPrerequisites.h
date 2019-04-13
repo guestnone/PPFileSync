@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-// Linux API...
+// Linux/POSIX API...
 #include <sys/stat.h>
-
-
-// POSIX API...
+#include <sys/types.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <syslog.h>

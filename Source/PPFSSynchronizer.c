@@ -61,24 +61,24 @@ void copySmallData(int inputFd, int outputFd)
 	do
 	{
 		bytesRead = read(inputFd, buffer, sizeof(buffer));
-		write(outputFd, buffer, sizeof(buffer);
+		write(outputFd, buffer, sizeof(buffer));
 	} while(bytesRead == sizeof(buffer));
 }
 
 int openFile(char* path, FileMode mode)
 { 
-	mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 	int fd;
 	switch (mode)
 	{
 	case ReadOnly:
-		fd = open (path, O_WRONLY | O_EXCL | O_CREAT, mode);
+		fd = open (path, O_WRONLY | O_EXCL | O_CREAT, openMode);
 		break;
 	case WriteOnly:
-		fd = open (path, O_RDONLY | O_EXCL | O_CREAT, mode);
+		fd = open (path, O_RDONLY | O_EXCL | O_CREAT, openMode);
 		break;
 	case ReadWrite:
-		fd = open (path, O_RDWR | O_EXCL | O_CREAT, mode);
+		fd = open (path, O_RDWR | O_EXCL | O_CREAT, openMode);
 		break;
 	}
 	if (fd == -1) {
@@ -88,21 +88,11 @@ int openFile(char* path, FileMode mode)
 	return fd;
 }
 
-inline int removeFile(char* path)
-{
-	return unlink(path);
-}
-
-inline int closeFileDesc(int fd)
-{
-	return close(fd);
-}
-
-int copyDataFromPath(char* sourcePath, char* destPath)
+int copyDataFromPath(char* sourcePath, char* destPath, unsigned int fileSizeThreshold)
 {
 	int sourceFd = openFile(sourcePath, ReadOnly);
 	int destFd = openFile(sourcePath, WriteOnly);
-	copyDataFromFileDesc(sourceFd, destFd);
+	copyDataFromFileDesc(sourceFd, destFd, fileSizeThreshold);
 	closeFileDesc(sourceFd);
 	closeFileDesc(destFd);
 }
@@ -115,4 +105,14 @@ int copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshol
 		copyLargeData(sourceFd, destFd);
 	else
 		copySmallData(sourceFd, destFd);
+}
+
+int removeFile(char* path)
+{
+	return unlink(path);
+}
+
+int closeFileDesc(int fd)
+{
+	return close(fd);
 }
