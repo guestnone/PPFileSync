@@ -37,11 +37,10 @@ int doesFileExist(const char* filename){
 void deleteAdditionalItems(char* source_path, char* destination_path,int recurency)
 {
 
-    //  TO DO: checking modified date EDIT: DONE
-    //DIR* src  = opendir(source_path);
     DIR* dest = opendir(destination_path);
     struct dirent *file;
     printf("source: %s\ndestination: %s\n",source_path,destination_path);
+
     while(file = readdir(dest))
     {
         if(file->d_type==DT_DIR)
@@ -52,23 +51,26 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
                 {
 
 
-                        if(file_exist (setFilePath(file->d_name,source_path)))
+                        if(element_exist (setElementPath(file->d_name,source_path)))
                         {
-                            if(shouldIdeleteElement(getStatFile(setFilePath(file->d_name,source_path)),getStatFile(setFilePath(file->d_name,destination_path))))
+                            if(shouldIdeleteElement(getStatFile(setElementPath(file->d_name,source_path)),getStatFile(setElementPath(file->d_name,destination_path))))
                             {
                                 printf("dir: %s\n",file->d_name);
-                                deleteAdditionalItems(setFilePath(file->d_name,source_path),setFilePath(file->d_name,destination_path),recurency);
+                                deleteAdditionalItems(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
                             }
 
                         }
                         else
                         {
-							deleteAdditionalItems(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
-                            //delete_dir 
+
+                            deleteAdditionalItems(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
+                             rmdir(setElementPath(file->d_name,destination_path));
+
                         }
 
 
                 }
+
             }
 
 
@@ -76,8 +78,8 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
         }
         else
         {
-            //if( !( strcmp( file->d_name, "." ) == 0 || strcmp( file->d_name, "..") == 0 ) )
-            if(!file_exist (setFilePath(file->d_name,source_path)) )
+            
+            if(!element_exist (setElementPath(file->d_name,source_path)) )
             {
                 //delete file
                 printf("file does not exist: %s\n",file->d_name);
@@ -85,8 +87,9 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
             else
             {
 
-                if(shouldIdeleteElement(getStatFile(setFilePath(file->d_name,source_path)),getStatFile(setFilePath(file->d_name,destination_path))))
+                if(shouldIdeleteElement(getStatFile(setElementPath(file->d_name,source_path)),getStatFile(setElementPath(file->d_name,destination_path))))
                 {
+                    //delete file
                     printf("file is old: %s\n",file->d_name);
                 }
                 else printf("file is good: %s\n",file->d_name);
@@ -97,7 +100,8 @@ void deleteAdditionalItems(char* source_path, char* destination_path,int recuren
     closedir(dest);
 }
 
-void copyPasteElements(char* source_path, char* destination_path,int recurency)
+
+void copyPasteElements(char* source_path, char* destination_path,int recurency,int threshold)
 {
     DIR* src = opendir(source_path);
     struct dirent *file;
@@ -113,8 +117,11 @@ void copyPasteElements(char* source_path, char* destination_path,int recurency)
                         if(!element_exist (setElementPath(file->d_name,destination_path)))
                         {
                             printf("creating dir: %s\n",file->d_name);
-                            //screate dir
-                            copyPasteElements(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency);
+                            struct stat toGetModeT;
+                            fstat(setElementPath(file->d_name,source_path),&toGetModeT);
+                            mkdir(setElementPath(file->d_name,destination_path),toGetModeT.st_mode);
+                            //create dir
+                            copyPasteElements(setElementPath(file->d_name,source_path),setElementPath(file->d_name,destination_path),recurency,threshold);
                         }
                         else{
                             printf("dir exist: %s\n",file->d_name);
@@ -128,7 +135,18 @@ void copyPasteElements(char* source_path, char* destination_path,int recurency)
             //if( !( strcmp( file->d_name, "." ) == 0 || strcmp( file->d_name, "..") == 0 ) )
             if(!element_exist (setElementPath(file->d_name,destination_path)) )
             {
-                //dcopy paste file
+
+                struct stat buf;
+                fstat(setElementPath(file->d_name,source_path),&buf);
+
+                if(threshold < buf.st_size)
+                {
+                    //copypasteBigFile()
+                }
+                else
+                {
+                    //copypastesmallfile();
+                }
                 printf("copying file: %s\n",file->d_name);
             }
             else
