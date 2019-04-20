@@ -58,11 +58,12 @@ int main(int argc, char *argv[])
 
 	if(argc < 2)
 	{
-		printFullHelp();
-		exit(EXIT_SUCCESS);
+		printErrorHelp();
+		printf("Type PPFileSync -h to see a list of all options.\n");
+		exit(EXIT_FAILURE);
 	}
 
-	while ((argument = getopt(argc, argv, "s:d:w:t:R:h:D")) != -1)
+	while ((argument = getopt(argc, argv, "s:d:w:t:RhD")) != -1)
 	{
 		//source destination sleep(wait) recursive threshold
 		switch (argument)
@@ -93,6 +94,10 @@ int main(int argc, char *argv[])
 				printFullHelp();
 				gOnlyDisplayHelp = true;
 				break;
+			default:
+				printErrorHelp();
+				printf("Type PPFileSync -h to see a list of all options.\n");
+				exit(EXIT_FAILURE);
 		}
 
 	}
@@ -100,6 +105,13 @@ int main(int argc, char *argv[])
 	if(gOnlyDisplayHelp)
 		exit(EXIT_SUCCESS);
 
+	if(destination == NULL && source == NULL)
+	{
+		printErrorHelp();
+		printf("\nYou must provide both source and destination.\n");
+		printf("Type PPFileSync -h to see a list of all options.\n");
+		exit(EXIT_FAILURE);
+	}
 	if(source == NULL)
 	{
 		printErrorHelp();
@@ -114,13 +126,7 @@ int main(int argc, char *argv[])
 		printf("Type PPFileSync -h to see a list of all options.\n");
 		exit(EXIT_FAILURE);
 	}
-	if(destination == NULL && source == NULL)
-	{
-		printErrorHelp();
-		printf("\nYou must provide both source and destination.\n");
-		printf("Type PPFileSync -h to see a list of all options.\n");
-		exit(EXIT_FAILURE);
-	}
+
 
 	signal(SIGTERM, exitHandler);
 	signal(SIGUSR1, forceHandler);
