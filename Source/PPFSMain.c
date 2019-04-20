@@ -5,8 +5,7 @@
 
 volatile bool gProgramRunning = true;
 volatile bool gPerformScan = true;
-volatile bool gOnlyDisplayHelp = false;
-volatile bool gDaemonize = false;
+volatile bool gDaemonize = true;
 
 void exitHandler(int signum)
 {
@@ -27,7 +26,7 @@ void initDaemon(bool withPathReset)
 	sid = switchToNewSession();
 	if (withPathReset)
 		resetToMainDirectory();
-	LOGNOTICE("Daemon Started on pid=%d and sid=%d", pid, sid)
+	LOGNOTICE("Daemon Started on pid=%d", sid)
 }
 
 void printErrorHelp()
@@ -44,7 +43,8 @@ void printFullHelp()
 		"  -d DESTDIR          Uses this destination directory for synchronization.\n"
         "  -R                  All directories on the source will be synchronized instead of only files on root directory.\n"
 		"  -t FILETHRESHOLD    Threshold in bytes where the files will use more faster, mmap-based copy interface.\n"
-        "  -w TIME             Wait time (in minutes) between every synchronization.\n");
+        "  -w TIME             Wait time (in minutes) between every synchronization.\n"
+		"  -v                  verbose mode (don't daemonize)\n");
 }
 
 int main(int argc, char *argv[])
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	while ((argument = getopt(argc, argv, "s:d:w:t:RhD")) != -1)
+	while ((argument = getopt(argc, argv, "s:d:w:t:Rhv")) != -1)
 	{
 		//source destination sleep(wait) recursive threshold
 		switch (argument)
@@ -88,12 +88,12 @@ int main(int argc, char *argv[])
 				threshold = atoi(optarg);
 //printf("threshold: %s\n",optarg);
 				break;
-			case 'D':
-				gDaemonize = true;
+			case 'v':
+				gDaemonize = false;
+				break;
 			case 'h':
 				printFullHelp();
-				gOnlyDisplayHelp = true;
-				break;
+				exit(EXIT_SUCCESS);
 			default:
 				printErrorHelp();
 				printf("Type PPFileSync -h to see a list of all options.\n");
@@ -101,9 +101,6 @@ int main(int argc, char *argv[])
 		}
 
 	}
-
-	if(gOnlyDisplayHelp)
-		exit(EXIT_SUCCESS);
 
 	if(destination == NULL && source == NULL)
 	{
@@ -129,11 +126,12 @@ int main(int argc, char *argv[])
 
 
 	signal(SIGTERM, exitHandler);
+	signal(SIGQUIT, exitHandler);
 	signal(SIGUSR1, forceHandler);
 	if(gDaemonize)
 		initDaemon(false);
 
-	while (gProgramRunning == true)
+	while (gProgramRunning)
 	{
 		int currSleepTime = sleepTime;
 		if(gPerformScan)
@@ -141,6 +139,7 @@ int main(int argc, char *argv[])
 			LOGNOTICE("Performing Synchronization!")
 			performSynchronization(source, destination, recursive, threshold);
 			gPerformScan = false;
+			LOGNOTICE("Synchronization Done! Sleeping...")
 		}
 		while (!gPerformScan)
 		{
@@ -148,8 +147,11 @@ int main(int argc, char *argv[])
 			--currSleepTime;
 			if (currSleepTime < 0)
 				gPerformScan = true;
+			if (!gProgramRunning)
+				break;
 		}
 	}
-
+	LOGNOTICE("Program Ended!");
+	shutDownSysLog();
 	return 0;
 }
