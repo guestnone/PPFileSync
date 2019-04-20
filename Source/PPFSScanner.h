@@ -3,4 +3,4 @@
 //
 #pragma once
 
-void performSynchronization(char* source_path, char* destination_path, int recursive);
+void performSynchronization(char* source_path, char* destination_path, int recursive, int threshold);

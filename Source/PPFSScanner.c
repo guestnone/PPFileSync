@@ -33,7 +33,21 @@ int doesFileExist(const char *filename)
 		return 0;
 }
 
-void performSynchronization(char *source_path, char *destination_path, int recursive)
+bool checkIfSameFile(struct stat sourceStat, struct stat destinationStat)
+{
+
+	return true;
+}
+
+bool checkIfNotInSource(char* source, char* destination)
+{
+	struct stat srcStat, destStat;
+	if(stat(source, &srcStat) == -1 && stat(destination, &destStat) != -1)
+		return true;
+	return false;
+}
+
+void performSynchronization(char *source_path, char *destination_path, int recursive, int threshold)
 {
 	DIR *dest = opendir(destination_path);
 	struct dirent *file;
@@ -49,18 +63,18 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				{
 					if (doesFileExist(setFilePath(file->d_name, source_path)))
 					{
-						if (shouldIdeleteElement(getStatFile(setFilePath(file->d_name, source_path)),
+						if (checkIfSameFile(getStatFile(setFilePath(file->d_name, source_path)),
 												 getStatFile(setFilePath(file->d_name, destination_path))))
 						{
 							printf("dir: %s\n", file->d_name);
-							deleteAdditionalItems(setFilePath(file->d_name, source_path),
-												  setFilePath(file->d_name, destination_path), recursive);
+							performSynchronization(setFilePath(file->d_name, source_path),
+												  setFilePath(file->d_name, destination_path), recursive, threshold);
 						}
 					}
 					else
 					{
-						deleteAdditionalItems(setFilePath(file->d_name, source_path),
-											  setFilePath(file->d_name, destination_path), recursive);
+						performSynchronization(setFilePath(file->d_name, source_path),
+											  setFilePath(file->d_name, destination_path), recursive, threshold);
 						int rmdirStatus = 0;
 						rmdirStatus = rmdir(setFilePath(file->d_name, destination_path));
 						if (rmdirStatus == 0)
@@ -69,7 +83,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 							struct tm tm = *localtime(&t);
 							LOGINFO("%d-%d-%d %d:%d:%d:directory doesnt exist in source folder. deleted directory succesfull: %s\n",
 									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-									file->d_name);
+									file->d_name)
 							//LOGINFO("abcdefghijk %d",11);
 						}
 						else
@@ -78,7 +92,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 							struct tm tm = *localtime(&t);
 							LOGINFO("%d-%d-%d %d:%d:%d: directory doesnt exist in source folder. couldnt delete directory: %s\n",
 									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-									file->d_name);
+									file->d_name)
 						}
 					}
 				}
@@ -86,7 +100,6 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 		}
 		else
 		{
-
 			if (!doesFileExist(setFilePath(file->d_name, source_path)))
 			{
 				int ret = removeFile(setFilePath(file->d_name, destination_path));
@@ -96,7 +109,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					struct tm tm = *localtime(&t);
 					LOGINFO("%d-%d-%d %d:%d:%d:file doesnt exist in source folder. succesfully deleted file: %s\n",
 							tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-							file->d_name);
+							file->d_name)
 				}
 				else
 				{
@@ -104,15 +117,15 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					struct tm tm = *localtime(&t);
 					LOGINFO("%d-%d-%d %d:%d:%d:file doesnt exist in source folder. couldnt delete file: %s \n",
 							tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-							file->d_name);
+							file->d_name)
 				}
 				printf("file does not exist: %s\n", file->d_name);
 			}
 			else
 			{
 
-				if (shouldIdeleteElement(getStatFile(setFilePath(file->d_name, source_path)),
-										 getStatFile(setFilePath(file->d_name, destination_path))))
+				if (checkIfNotInSource(setFilePath(file->d_name, source_path),
+						               setFilePath(file->d_name, destination_path)))
 				{
 					int ret = removeFile(setFilePath(file->d_name, destination_path));
 					if (ret == 0)
@@ -167,7 +180,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 							time_t t = time(NULL);
 							struct tm tm = *localtime(&t);
 							LOGINFO("%d-%d-%d %d:%d:%d: created directory: %s  \n", tm.tm_year + 1900, tm.tm_mon + 1,
-									tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name);
+									tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name)
 
 						}
 						else
@@ -175,7 +188,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 							time_t t = time(NULL);
 							struct tm tm = *localtime(&t);
 							LOGINFO("%d-%d-%d %d:%d:%d: couldnt create directory: %s  \n", tm.tm_year + 1900,
-									tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name);
+									tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name)
 
 						}
 						//create dir
@@ -192,7 +205,6 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 		}
 		else
 		{
-			//if( !( strcmp( file->d_name, "." ) == 0 || strcmp( file->d_name, "..") == 0 ) )
 			if (!doesFileExist(setFilePath(file->d_name, destination_path)))
 			{
 				int sourceFd = dirfd(src);
