@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 // Linux/POSIX API...
 #include <sys/stat.h>
@@ -14,3 +15,4 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <dirent.h>
