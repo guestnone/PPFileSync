@@ -138,6 +138,13 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 
 				if (checkIfNotInSource(setFilePath(file->d_name, source_path),
 						               setFilePath(file->d_name, destination_path)))
+				//if przed else sprawdza to samo (!doesFileExists)\
+				// to ze plik w dest_path juz wiemy bo skanowanie plikow znalazlo ten plik. nie ma potrzeby teoretycznie sprawdzac
+				//czy oba pliki istnieja, no chyba ze chcesz miec pewnosc na 100% ze all is OK. ale 2 ify nie sa potrzebne. 
+				//oba teoretycznie robia tosamo.
+				//EDIT:	aha wczesniej tu bylo usuwanie plikow tkore sa przestarzale, zostawiam na razie. ale 1 if do usuniecia.bo nie usuwamy tylko nadpisujemy
+				//moze ja czegos nie widze wiec zostawiam kod i komentarz
+				
 				{
 					int ret = removeFile(setFilePath(file->d_name, destination_path));
 					if (ret == 0)
@@ -218,6 +225,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 		else
 		{
 			if (!doesFileExist(setFilePath(file->d_name, destination_path)))
+				
 			{
 				int sourceFd = dirfd(src);
 				int destFd = openFile(setFilePath(file->d_name, destination_path), WriteOnly);
@@ -235,24 +243,43 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					{
 						time_t t = time(NULL);
 						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: copied and pasted file: %s. size of file: %ld  \n",
+						LOGINFO("%d-%d-%d %d:%d:%d: copied and pasted file: %s.size limit:%lld size of file: %ld  \n",
 								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-								file->d_name, buf.st_size);
+								file->d_name,threshold, buf.st_size);
 
 					}
 					else
 					{
 						time_t t = time(NULL);
 						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: couldnt copy paste file: %s. size of file: %ld  \n",
+						LOGINFO("%d-%d-%d %d:%d:%d: couldnt copy paste file: %s.size limit:%lld size of file: %ld  \n",
 								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-								file->d_name, buf.st_size);
+								file->d_name,threshold, buf.st_size);
 
 					}
 				}
 				else
 				{
 					//copypastesmallfile();
+					//successfull
+					if (0)
+					{
+						time_t t = time(NULL);
+						struct tm tm = *localtime(&t);
+						LOGINFO("%d-%d-%d %d:%d:%d: copied and pasted file: %s.size limit:%lld size of file: %ld  \n",
+								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+								file->d_name,threshold, buf.st_size);
+
+					}//fail
+					else
+					{
+						time_t t = time(NULL);
+						struct tm tm = *localtime(&t);
+						LOGINFO("%d-%d-%d %d:%d:%d: couldnt copy paste file: %s. size limit:%lld size of file: %ld  \n",
+								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+								file->d_name,threshold, buf.st_size);
+
+					}
 				}
 				*/
 
@@ -260,7 +287,61 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			}
 			else
 			{
-				printf("file is good: %s\n", file->d_name);
+				/*
+				
+				if(!checkIfSameFile(setFilePath(file->d_name,destination_path),setFilePath(file->d_name,source_path))
+				{
+					//1. check file size to choose the method for copying
+					//2. overwrite the file
+					
+					struct stat buf;
+					fstat(setFilePath(file->d_name, source_path), &buf);
+					if(threshold <buf.st_size)
+					{
+						if (0)
+						{
+							time_t t = time(NULL);
+							struct tm tm = *localtime(&t);
+							LOGINFO("%d-%d-%d %d:%d:%d: overwrote small file: %s.size limit: %lld. size of file: %ld  \n",
+									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+									file->d_name,threshold, buf.st_size);
+
+						}
+						else
+						{
+							time_t t = time(NULL);
+							struct tm tm = *localtime(&t);
+							LOGINFO("%d-%d-%d %d:%d:%d: fail on overwritting small file: %s.size limit: %lld size of file: %ld  \n",
+									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+									file->d_name,threshold, buf.st_size);
+
+						}
+					}
+					else
+					{
+						if (0)
+						{
+							time_t t = time(NULL);
+							struct tm tm = *localtime(&t);
+							LOGINFO("%d-%d-%d %d:%d:%d: overwrote big file %s. size limit: %lld size of file: %ld  \n",
+									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+									file->d_name,threshold buf.st_size);
+
+						}
+						else
+						{
+							time_t t = time(NULL);
+							struct tm tm = *localtime(&t);
+							LOGINFO("%d-%d-%d %d:%d:%d: fail on overwritting file: %s. size limit:%lld size of file: %ld  \n",
+									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+									file->d_name,threshold, buf.st_size);
+
+						}
+					}
+				}
+				*
+				
+				//printf("file is good: %s\n", file->d_name);
 			}
 
 		}
