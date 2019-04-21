@@ -21,3 +21,5 @@ void closeStandardConsole(void);
 void resetToMainDirectory(void);
 
 pid_t switchToNewSession(void);
+
+void computeMD5HashFromLoc(char* fileLocation, unsigned char* out);

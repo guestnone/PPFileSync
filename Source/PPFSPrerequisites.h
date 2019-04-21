@@ -16,3 +16,5 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <dirent.h>
+
+#include <openssl/md5.h>

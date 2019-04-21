@@ -32,11 +32,23 @@ int doesFileExist(const char *filename)
 	else // -1
 		return 0;
 }
-
+/*
 bool checkIfSameFile(struct stat sourceStat, struct stat destinationStat)
 {
 
 	return true;
+}
+*/
+
+bool checkIfSameFile(char* source, char* destination)
+{
+	unsigned char sourceHash[MD5_DIGEST_LENGTH];
+	unsigned char destHash[MD5_DIGEST_LENGTH];
+	computeMD5HashFromLoc(source, sourceHash);
+	computeMD5HashFromLoc(destination, destHash);
+	if(memcmp(sourceHash, destHash, MD5_DIGEST_LENGTH) == 0)
+		return true;
+	return false;
 }
 
 bool checkIfNotInSource(char* source, char* destination)
@@ -63,8 +75,8 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				{
 					if (doesFileExist(setFilePath(file->d_name, source_path)))
 					{
-						if (checkIfSameFile(getStatFile(setFilePath(file->d_name, source_path)),
-												 getStatFile(setFilePath(file->d_name, destination_path))))
+						if (checkIfSameFile(setFilePath(file->d_name, source_path),
+												 setFilePath(file->d_name, destination_path)))
 						{
 							printf("dir: %s\n", file->d_name);
 							performSynchronization(setFilePath(file->d_name, source_path),
