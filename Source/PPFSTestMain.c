@@ -30,11 +30,14 @@ int main()
 	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 
 	startUpSysLog();
-	int sFd = open (s, O_RDONLY, openMode);
-	int dFd = open (d, O_RDWR | O_EXCL | O_CREAT, openMode);
-	copyDataFromFileDesc(sFd, dFd, 1000);
-	closeFileDesc(sFd);
-	closeFileDesc(dFd);
+	//int sFd = open (s, O_RDONLY, openMode);
+	//int dFd = open (d, O_RDWR | O_EXCL | O_CREAT, openMode);
+	//copyDataFromFileDesc(sFd, dFd, 100);
+	copyDataFromPath(s, d, 100);
+	//closeFileDesc(sFd);
+	//closeFileDesc(dFd);
+	//sleep(5);
+	//removeFile(d);
 	shutDownSysLog();
 #endif
 }

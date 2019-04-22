@@ -10,7 +10,6 @@ void copyLargeData(int inputFd, int outputFd)
 	struct stat inputStats = {0};
 	struct stat outputStats = {0};
 	char *readMap, *writeMap;
-	int offset = 0;
 
 	fstat(inputFd, &inputStats);
 	fstat(outputFd, &outputStats);
@@ -20,27 +19,27 @@ void copyLargeData(int inputFd, int outputFd)
 	lseek(outputFd, filesize - 1, SEEK_SET);
 
 
-	if ((readMap = mmap((caddr_t) 0, bytes, PROT_READ, MAP_SHARED, inputFd, offset)) == MAP_FAILED)
+	if ((readMap = mmap((caddr_t) 0, filesize, PROT_READ, MAP_SHARED, inputFd, 0)) == MAP_FAILED)
 	{
-		LOGFATAL("mmap error : fps\n")
-		exit(1);
+		LOGFATAL("Couldn't mmap source descriptor, stopping.\n")
+		exit(EXIT_FAILURE);
 	}
-	if ((writeMap = mmap((caddr_t) 0, bytes, PROT_READ | PROT_WRITE, MAP_SHARED, outputFd, offset)) == MAP_FAILED)
+	if ((writeMap = mmap((caddr_t) 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, outputFd, 0)) == MAP_FAILED)
 	{
-		LOGFATAL("mmap error : fpd\n")
-		exit(1);
+		LOGFATAL("Couldn't mmap destination descriptor, stopping.\n")
+		exit(EXIT_FAILURE);
 	}
-	memcpy(readMap, writeMap, filesize);
+	memcpy(writeMap, readMap, filesize);
 
-	if ((munmap(readMap, bytes)) == -1)
+	if ((munmap(readMap, filesize)) == -1)
 	{
-		LOGFATAL("munmap error : src\n")
-		exit(1);
+		LOGFATAL("Couldn't unmap source descriptor from memory, stopping.\n")
+		exit(EXIT_FAILURE);
 	}
-	if ((munmap(writeMap, bytes) == -1))
+	if ((munmap(writeMap, filesize) == -1))
 	{
-		LOGFATAL("munmap error : dst\n")
-		exit(1);
+		LOGFATAL("Couldn't unmap destination descriptor from memory, stopping.\n")
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -55,34 +54,6 @@ void copySmallData(int inputFd, int outputFd)
 		write(outputFd, buffer, bytesRead);
 	}
 	while (bytesRead == sizeof(buffer));
-}
-
-int openFile(char *path, FileMode mode)
-{
-	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-	int fd;
-	switch (mode)
-	{
-		case ReadOnly:
-			fd = open(path, O_RDONLY, openMode);
-			break;
-		case WriteOnly:
-			fd = open(path, O_WRONLY, openMode);
-			break;
-		case ReadWrite:
-			fd = open(path, O_RDWR, openMode);
-			break;
-		case CreateWrite :
-			fd = open(path, O_WRONLY | O_EXCL | O_CREAT, openMode);
-			break;
-	}
-	if (fd == -1)
-	{
-		LOGERR("Couldn't open file %s", path)
-
-		return -1;
-	}
-	return fd;
 }
 
 int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThreshold)
