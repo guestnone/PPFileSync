@@ -87,8 +87,18 @@ int openFile(char *path, FileMode mode)
 
 int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThreshold)
 {
-	int sourceFd = openFile(sourcePath, ReadOnly);
-	int destFd = openFile(destPath, WriteOnly);
+	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+	int sourceFd = open(sourcePath, O_RDONLY, openMode);
+	int destFd = open(destPath, O_RDWR | O_EXCL | O_CREAT, openMode);
+	if (destFd == -1) // File may exist, try again without creation flag
+	{
+		destFd = open(destPath, O_RDWR, openMode);
+		if (destFd == -1)
+		{
+			LOGFATAL("Destination file couldn't be open, stopping.")
+			exit(EXIT_FAILURE);
+		}
+	}
 	copyDataFromFileDesc(sourceFd, destFd, fileSizeThreshold);
 	closeFileDesc(sourceFd);
 	closeFileDesc(destFd);
