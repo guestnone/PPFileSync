@@ -120,7 +120,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				else
 				{
 					
-					LOGFATAL"file doesnt exist in source folder. couldnt delete file: %s \n",
+					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s \n",
 							file->d_name)
 				}
 				printf("file does not exist: %s\n", file->d_name);
