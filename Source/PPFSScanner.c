@@ -92,19 +92,14 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 						rmdirStatus = rmdir(setFilePath(file->d_name, destination_path));
 						if (rmdirStatus == 0)
 						{
-							time_t t = time(NULL);
-							struct tm tm = *localtime(&t);
-							LOGINFO("%d-%d-%d %d:%d:%d:directory doesnt exist in source folder. deleted directory succesfull: %s\n",
-									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+							
+							LOGINFO("directory doesnt exist in source folder. deleted directory succesfull: %s\n",
 									file->d_name)
 							//LOGINFO("abcdefghijk %d",11);
 						}
 						else
 						{
-							time_t t = time(NULL);
-							struct tm tm = *localtime(&t);
-							LOGINFO("%d-%d-%d %d:%d:%d: directory doesnt exist in source folder. couldnt delete directory: %s\n",
-									tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+							LOGFATAL("directory doesnt exist in source folder. couldnt delete directory: %s\n",
 									file->d_name)
 						}
 					}
@@ -118,18 +113,14 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				int ret = removeFile(setFilePath(file->d_name, destination_path));
 				if (ret == 0)
 				{
-					time_t t = time(NULL);
-					struct tm tm = *localtime(&t);
-					LOGINFO("%d-%d-%d %d:%d:%d:file doesnt exist in source folder. succesfully deleted file: %s\n",
-							tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+					
+					LOGINFO("file doesnt exist in source folder. succesfully deleted file: %s\n",
 							file->d_name)
 				}
 				else
 				{
-					time_t t = time(NULL);
-					struct tm tm = *localtime(&t);
-					LOGINFO("%d-%d-%d %d:%d:%d:file doesnt exist in source folder. couldnt delete file: %s \n",
-							tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+					
+					LOGFATAL"file doesnt exist in source folder. couldnt delete file: %s \n",
 							file->d_name)
 				}
 				printf("file does not exist: %s\n", file->d_name);
@@ -143,17 +134,13 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					int ret = removeFile(setFilePath(file->d_name, destination_path));
 					if (ret == 0)
 					{
-						time_t t = time(NULL);
-						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: file is old. succesfully deleted file: %s  \n", tm.tm_year + 1900,
-								tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name);
+						
+						LOGINFO("file is old. succesfully deleted file: %s  \n",file->d_name);
 					}
 					else
 					{
-						time_t t = time(NULL);
-						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: file is old. couldnt delete file: %s  \n", tm.tm_year + 1900,
-								tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name);
+						
+						LOGFATAL("file is old. couldnt delete file: %s  \n", file->d_name);
 
 					}
 					printf("file is old: %s\n", file->d_name);
@@ -191,18 +178,14 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 
 						if (mkdirStatus == 0)
 						{
-							time_t t = time(NULL);
-							struct tm tm = *localtime(&t);
-							LOGINFO("%d-%d-%d %d:%d:%d: created directory: %s  \n", tm.tm_year + 1900, tm.tm_mon + 1,
-									tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name)
+							
+							LOGINFO("created directory: %s  \n",  file->d_name)
 
 						}
 						else
 						{
-							time_t t = time(NULL);
-							struct tm tm = *localtime(&t);
-							LOGINFO("%d-%d-%d %d:%d:%d: couldnt create directory: %s  \n", tm.tm_year + 1900,
-									tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, file->d_name)
+						
+							LOGFATAL(" couldnt create directory: %s  \n", file->d_name)
 
 						}
 						//create dir
@@ -234,38 +217,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 				}
 				copyDataFromFileDesc(sourceFd, destFd, threshold);
 				closeFileDesc(destFd);
-				/*
-				struct stat buf;
-				fstat(setFilePath(file->d_name, source_path), &buf);
-
-				if (threshold < buf.st_size)
-				{
-					//copypasteBigFile()
-					//sucessful
-					if (0)
-					{
-						time_t t = time(NULL);
-						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: copied and pasted file: %s. size of file: %ld  \n",
-								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-								file->d_name, buf.st_size);
-
-					}
-					else
-					{
-						time_t t = time(NULL);
-						struct tm tm = *localtime(&t);
-						LOGINFO("%d-%d-%d %d:%d:%d: couldnt copy paste file: %s. size of file: %ld  \n",
-								tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-								file->d_name, buf.st_size);
-
-					}
-				}
-				else
-				{
-					//copypastesmallfile();
-				}
-				*/
+				
 
 				printf("copying file: %s\n", file->d_name);
 			}
