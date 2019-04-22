@@ -61,6 +61,7 @@ bool checkIfNotInSource(char* source, char* destination)
 
 void performSynchronization(char *source_path, char *destination_path, int recursive, int threshold)
 {
+	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 	DIR *dest = opendir(destination_path);
 	struct dirent *file;
 	printf("source: %s\ndestination: %s\n", source_path, destination_path);
@@ -168,6 +169,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 
 void copyPasteElements(char *source_path, char *destination_path, int recursive, int threshold)
 {
+	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 	DIR *src = opendir(source_path);
 	struct dirent *file;
 
@@ -220,7 +222,16 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			if (!doesFileExist(setFilePath(file->d_name, destination_path)))
 			{
 				int sourceFd = dirfd(src);
-				int destFd = openFile(setFilePath(file->d_name, destination_path), WriteOnly);
+				int destFd = open(setFilePath(file->d_name, destination_path), O_RDWR | O_EXCL | O_CREAT, openMode);
+				if (destFd == -1) // File may exist, try again without creation flag
+				{
+					destFd = open(setFilePath(file->d_name, destination_path), O_RDWR, openMode);
+					if (destFd == -1)
+					{
+						LOGFATAL("One of the files couldn't be open, stopping.")
+						exit(EXIT_FAILURE);
+					}
+				}
 				copyDataFromFileDesc(sourceFd, destFd, threshold);
 				closeFileDesc(destFd);
 				/*

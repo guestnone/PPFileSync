@@ -23,3 +23,5 @@ void resetToMainDirectory(void);
 pid_t switchToNewSession(void);
 
 void computeMD5HashFromLoc(char* fileLocation, unsigned char* out);
+
+void itoa(int value, char* str, int base);

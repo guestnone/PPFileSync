@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <assert.h>
 
 // Linux/POSIX API...
 #include <sys/stat.h>
