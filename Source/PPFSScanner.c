@@ -74,22 +74,21 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 			{
 				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
 				{
-					if (doesFileExist(setFilePath(file->d_name, source_path)))
+					char *sPath = setFilePath(file->d_name, source_path);
+					char *dPath = setFilePath(file->d_name, destination_path);
+					if (doesFileExist(sPath))
 					{
-						if (checkIfSameFile(setFilePath(file->d_name, source_path),
-												 setFilePath(file->d_name, destination_path)))
+						if (checkIfSameFile(sPath, dPath))
 						{
 							printf("dir: %s\n", file->d_name);
-							performSynchronization(setFilePath(file->d_name, source_path),
-												  setFilePath(file->d_name, destination_path), recursive, threshold);
+							performSynchronization(sPath, dPath, recursive, threshold);
 						}
 					}
 					else
 					{
-						performSynchronization(setFilePath(file->d_name, source_path),
-											  setFilePath(file->d_name, destination_path), recursive, threshold);
+						performSynchronization(sPath, dPath, recursive, threshold);
 						int rmdirStatus = 0;
-						rmdirStatus = rmdir(setFilePath(file->d_name, destination_path));
+						rmdirStatus = rmdir(dPath);
 						if (rmdirStatus == 0)
 						{
 							
@@ -103,14 +102,18 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 									file->d_name)
 						}
 					}
+					free(sPath);
+					free(dPath);
 				}
 			}
 		}
 		else
 		{
-			if (!doesFileExist(setFilePath(file->d_name, source_path)))
+			char *sPath = setFilePath(file->d_name, source_path);
+			char *dPath = setFilePath(file->d_name, destination_path);
+			if (!doesFileExist(sPath))
 			{
-				int ret = removeFile(setFilePath(file->d_name, destination_path));
+				int ret = removeFile(dPath);
 				if (ret == 0)
 				{
 					
@@ -128,10 +131,9 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 			else
 			{
 
-				if (checkIfNotInSource(setFilePath(file->d_name, source_path),
-						               setFilePath(file->d_name, destination_path)))
+				if (checkIfNotInSource(sPath, dPath))
 				{
-					int ret = removeFile(setFilePath(file->d_name, destination_path));
+					int ret = removeFile(dPath);
 					if (ret == 0)
 					{
 						
@@ -147,6 +149,8 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				}
 				else printf("file is good: %s\n", file->d_name);
 			}
+			free(sPath);
+			free(dPath);
 		}
 
 	}
@@ -169,12 +173,14 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			{
 				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
 				{
-					if (!doesFileExist(setFilePath(file->d_name, destination_path)))
+					char *sPath = setFilePath(file->d_name, source_path);
+					char *dPath = setFilePath(file->d_name, destination_path);
+					if (!doesFileExist(dPath))
 					{
 						printf("creating dir: %s\n", file->d_name);
 						struct stat toGetModeT;
-						stat(setFilePath(file->d_name, source_path), &toGetModeT);
-						int mkdirStatus = mkdir(setFilePath(file->d_name, destination_path), toGetModeT.st_mode);
+						stat(sPath, &toGetModeT);
+						int mkdirStatus = mkdir(dPath, toGetModeT.st_mode);
 
 						if (mkdirStatus == 0)
 						{
@@ -189,27 +195,29 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 
 						}
 						//create dir
-						copyPasteElements(setFilePath(file->d_name, source_path),
-										  setFilePath(file->d_name, destination_path), recursive, threshold);
+						copyPasteElements(sPath, dPath, recursive, threshold);
 					}
 					else
 					{
 						printf("dir exist: %s\n", file->d_name);
 					}
-
+					free(sPath);
+					free(dPath);
 				}
 			}
 		}
 		else
 		{
-			if (!doesFileExist(setFilePath(file->d_name, destination_path)))
+			char *sPath = setFilePath(file->d_name, source_path);
+			char *dPath = setFilePath(file->d_name, destination_path);
+			if (!doesFileExist(dPath))
 			{
 				//int sourceFd = dirfd(src);
-				int sourceFd = open(setFilePath(file->d_name, source_path), O_RDONLY, openMode);
-				int destFd = open(setFilePath(file->d_name, destination_path), O_RDWR | O_EXCL | O_CREAT, openMode);
+				int sourceFd = open(sPath, O_RDONLY, openMode);
+				int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
 				if (destFd == -1) // File may exist, try again without creation flag
 				{
-					destFd = open(setFilePath(file->d_name, destination_path), O_RDWR, openMode);
+					destFd = open(dPath, O_RDWR, openMode);
 					if (destFd == -1)
 					{
 						LOGFATAL("One of the files couldn't be open, stopping.")
@@ -227,7 +235,8 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			{
 				printf("file is good: %s\n", file->d_name);
 			}
-
+			free(sPath);
+			free(dPath);
 		}
 
 		file = readdir(src);
