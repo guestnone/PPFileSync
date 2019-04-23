@@ -247,7 +247,26 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			}
 			else
 			{
-				printf("file is good: %s\n", file->d_name);
+				if(!checkIfSameFile(sPath, dPath))
+				{
+					int sourceFd = open(sPath, O_RDONLY, openMode);
+					int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
+					if (destFd == -1) // File may exist, try again without creation flag
+					{
+						destFd = open(dPath, O_RDWR, openMode);
+						if (destFd == -1)
+						{
+							LOGFATAL("One of the files couldn't be open, stopping.")
+							exit(EXIT_FAILURE);
+						}
+					}
+					copyDataFromFileDesc(sourceFd, destFd, threshold);
+					closeFileDesc(destFd);
+					closeFileDesc(sourceFd);
+					printf("file Changed: %s\n", file->d_name);
+				}
+				else
+					printf("file is good: %s\n", file->d_name);
 			};
 		}
 
