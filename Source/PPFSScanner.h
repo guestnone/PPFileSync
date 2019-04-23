@@ -16,3 +16,5 @@
  * @param threshold Threshold (in MegaBytes) where the file should use more performant file copying mechanism.
  */
 void performSynchronization(char* source_path, char* destination_path, int recursive, int threshold);
+
+void copyPasteElements(char *source_path, char *destination_path, int recursive, int threshold);

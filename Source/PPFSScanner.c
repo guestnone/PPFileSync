@@ -204,7 +204,8 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 		{
 			if (!doesFileExist(setFilePath(file->d_name, destination_path)))
 			{
-				int sourceFd = dirfd(src);
+				//int sourceFd = dirfd(src);
+				int sourceFd = open(setFilePath(file->d_name, source_path), O_RDONLY, openMode);
 				int destFd = open(setFilePath(file->d_name, destination_path), O_RDWR | O_EXCL | O_CREAT, openMode);
 				if (destFd == -1) // File may exist, try again without creation flag
 				{
@@ -217,6 +218,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 				}
 				copyDataFromFileDesc(sourceFd, destFd, threshold);
 				closeFileDesc(destFd);
+				closeFileDesc(sourceFd);
 				
 
 				printf("copying file: %s\n", file->d_name);
