@@ -10,52 +10,36 @@
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
 
-#define MAX_SIZE 1048576
 /**
- * Copies the files using the memory mapping (mmap).
+ * Copies the files using the copy_file_range kernel function (copies directly in kernel).
  * @param inputFd Source file descriptor to copy the files.
  * @param outputFd To which file descriptor the source should be written.
- *
- * @note On 32-bit version this only supports 4GB files, This is due of us mapping the entire file and not the
- *       parts of it, which should be a better idea. L1imit AFAIK on 64-bit ones in our use is not noticeable
- *       so I'm leaving as it is.
  */
 void copyLargeData(int inputFd, int outputFd)
 {
 	struct stat inputStats = {0};
 	struct stat outputStats = {0};
-	char *readMap, *writeMap;
 
 	fstat(inputFd, &inputStats);
 	fstat(outputFd, &outputStats);
 	int filesize = inputStats.st_size;
-	int bytes = MAX_SIZE;
+	loff_t len, ret;
 	ftruncate(outputFd, filesize);
 	lseek(outputFd, filesize - 1, SEEK_SET);
 
+	len = inputStats.st_size;
+	do
+	{
+		ret = copy_file_range(inputFd, NULL, outputFd, NULL, len, 0);
+		if (ret == -1)
+		{
+			LOGFATAL("copy_file_range failed, stopping...")
+			exit(EXIT_FAILURE);
+		}
 
-	if ((readMap = mmap((caddr_t) 0, filesize, PROT_READ, MAP_SHARED, inputFd, 0)) == MAP_FAILED)
-	{
-		LOGFATAL("Couldn't mmap source descriptor, stopping.\n")
-		exit(EXIT_FAILURE);
-	}
-	if ((writeMap = mmap((caddr_t) 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, outputFd, 0)) == MAP_FAILED)
-	{
-		LOGFATAL("Couldn't mmap destination descriptor, stopping.\n")
-		exit(EXIT_FAILURE);
-	}
-	memcpy(writeMap, readMap, filesize);
+		len -= ret;
+	} while (len > 0);
 
-	if ((munmap(readMap, filesize)) == -1)
-	{
-		LOGFATAL("Couldn't unmap source descriptor from memory, stopping.\n")
-		exit(EXIT_FAILURE);
-	}
-	if ((munmap(writeMap, filesize) == -1))
-	{
-		LOGFATAL("Couldn't unmap destination descriptor from memory, stopping.\n")
-		exit(EXIT_FAILURE);
-	}
 }
 
 /**
@@ -114,7 +98,7 @@ void copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThresho
 	readlink(tmpFdPathDest, filePathDest, PATH_MAX);
 	if (inputStats.st_size > fileSizeThreshold*1000000)
 	{
-		LOGINFO("Copying file %s to %s using mmap...", filePathSource, filePathDest)
+		LOGINFO("Copying file %s to %s using copy_file_range...", filePathSource, filePathDest)
 		copyLargeData(sourceFd, destFd);
 	}
 	else

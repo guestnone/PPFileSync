@@ -7,7 +7,7 @@
 */
 //---------------------------------------------------------------------------
 #pragma once
-
+#define _GNU_SOURCE
 // C library...
 #include <signal.h>
 #include <stdio.h>

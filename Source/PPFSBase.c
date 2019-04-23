@@ -67,17 +67,17 @@ void resetToMainDirectory(void)
 void computeMD5HashFromLoc(char *fileLocation, unsigned char *out)
 {
 	MD5_CTX c;
-	char buf[512];
+	char buf[2048];
 	ssize_t bytes;
 	int fd = open(fileLocation, O_RDONLY);
 
 	MD5_Init(&c);
-	bytes = read(fd, buf, 512);
+	bytes = read(fd, buf, 2048);
 
 	while (bytes > 0)
 	{
 		MD5_Update(&c, buf, bytes);
-		bytes = read(fd, buf, 512);
+		bytes = read(fd, buf, 2048);
 	}
 	MD5_Final(out, &c);
 	close(fd);
