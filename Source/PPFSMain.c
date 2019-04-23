@@ -43,6 +43,7 @@ void initDaemon(bool withPathReset)
 	sid = switchToNewSession();
 	if (withPathReset)
 		resetToMainDirectory();
+	closeStandardConsole();
 	LOGNOTICE("Daemon Started on pid=%d", sid)
 }
 
