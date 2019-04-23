@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
 		{
 			LOGNOTICE("Performing Synchronization!")
 			performSynchronization(source, destination, recursive, threshold);
+			copyPasteElements(source,destination,recursive,threshold);
 			gPerformScan = false;
 			LOGNOTICE("Synchronization Done! Sleeping...")
 		}
