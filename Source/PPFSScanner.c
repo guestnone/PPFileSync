@@ -10,7 +10,7 @@
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
 #include "PPFSSynchronizer.h"
-
+/*
 char *setFilePath(char *fileName, char *folderPath)
 {
 	int length = strlen(fileName) + strlen(folderPath) + 1;
@@ -21,6 +21,16 @@ char *setFilePath(char *fileName, char *folderPath)
 	strcat(filePath, fileName);
 
 	return filePath;
+}
+*/
+
+void setFilePath(char *fileName, char *folderPath, char* out)
+{
+
+	strcpy(out, folderPath);
+	strcat(out, "/");
+	strcat(out, fileName);
+
 }
 
 struct stat getStatFile(char *filePath)
@@ -74,8 +84,10 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 			{
 				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
 				{
-					char *sPath = setFilePath(file->d_name, source_path);
-					char *dPath = setFilePath(file->d_name, destination_path);
+					char sPath[PATH_MAX];
+					char dPath[PATH_MAX];
+					setFilePath(file->d_name, source_path, sPath);
+					setFilePath(file->d_name, destination_path, dPath);
 					if (doesFileExist(sPath))
 					{
 						if (checkIfSameFile(sPath, dPath))
@@ -102,15 +114,16 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 									file->d_name)
 						}
 					}
-					free(sPath);
-					free(dPath);
+
 				}
 			}
 		}
 		else
 		{
-			char *sPath = setFilePath(file->d_name, source_path);
-			char *dPath = setFilePath(file->d_name, destination_path);
+			char sPath[PATH_MAX];
+			char dPath[PATH_MAX];
+			setFilePath(file->d_name, source_path, sPath);
+			setFilePath(file->d_name, destination_path, dPath);
 			if (!doesFileExist(sPath))
 			{
 				int ret = removeFile(dPath);
@@ -149,8 +162,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				}
 				else printf("file is good: %s\n", file->d_name);
 			}
-			free(sPath);
-			free(dPath);
+
 		}
 
 	}
@@ -173,8 +185,10 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			{
 				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
 				{
-					char *sPath = setFilePath(file->d_name, source_path);
-					char *dPath = setFilePath(file->d_name, destination_path);
+					char sPath[PATH_MAX];
+					char dPath[PATH_MAX];
+					setFilePath(file->d_name, source_path, sPath);
+					setFilePath(file->d_name, destination_path, dPath);
 					if (!doesFileExist(dPath))
 					{
 						printf("creating dir: %s\n", file->d_name);
@@ -201,15 +215,15 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					{
 						printf("dir exist: %s\n", file->d_name);
 					}
-					free(sPath);
-					free(dPath);
 				}
 			}
 		}
 		else
 		{
-			char *sPath = setFilePath(file->d_name, source_path);
-			char *dPath = setFilePath(file->d_name, destination_path);
+			char sPath[PATH_MAX];
+			char dPath[PATH_MAX];
+			setFilePath(file->d_name, source_path, sPath);
+			setFilePath(file->d_name, destination_path, dPath);
 			if (!doesFileExist(dPath))
 			{
 				//int sourceFd = dirfd(src);
@@ -234,9 +248,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			else
 			{
 				printf("file is good: %s\n", file->d_name);
-			}
-			free(sPath);
-			free(dPath);
+			};
 		}
 
 		file = readdir(src);
