@@ -1,3 +1,11 @@
+//---------------------------------------------------------------------------
+/*
+	Copyright (C) 2019 Patrick Rećko, Paweł Krzywosz
+
+	This source file is released under the MIT License.
+	See LICENSE.md for full terms. This notice is not to be removed.
+*/
+//---------------------------------------------------------------------------
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
 #include "PPFSScanner.h"
@@ -7,16 +15,25 @@ volatile bool gProgramRunning = true;
 volatile bool gPerformScan = true;
 volatile bool gDaemonize = true;
 
+/**
+ * Handles the interrupt signal for exiting the program.
+ */
 void exitHandler(int signum)
 {
 	gProgramRunning = false;
 }
 
+/**
+ * Handles the interrupt signal for SIGUSR1 (force synchronization)
+ */
 void forceHandler(int signum)
 {
 	gPerformScan = true;
 }
-
+/**
+ * Initializes the program as a daemon.
+ * @param withPathReset Does the run-path should be reset to root ("/")?
+ */
 void initDaemon(bool withPathReset)
 {
 	pid_t pid, sid;
@@ -65,43 +82,38 @@ int main(int argc, char *argv[])
 
 	while ((argument = getopt(argc, argv, "s:d:w:t:Rhv")) != -1)
 	{
-		//source destination sleep(wait) recursive threshold
 		switch (argument)
 		{
-			case 's':
+			case 's': // Source
 				source = optarg;
-//printf("source: %s\n",optarg);
 				break;
-			case 'd':
+			case 'd': // Destination
 				destination = optarg;
-//printf("destination: %s\n",optarg);
 				break;
-			case 'w':
+			case 'w': // Wait time (sleep time)
 				sleepTime = atoi(optarg);
-//printf("sleep time: %s\n",optarg);
 				break;
-			case 'R':
+			case 'R': // Recursive
 				recursive = 1;
 				printf("recursive\n");
 				break;
-			case 't':
+			case 't': // Threshold.
 				threshold = atoi(optarg);
-//printf("threshold: %s\n",optarg);
 				break;
-			case 'v':
+			case 'v': // Verbose (no daemon)
 				gDaemonize = false;
 				break;
-			case 'h':
+			case 'h': // Help
 				printFullHelp();
 				exit(EXIT_SUCCESS);
-			default:
+			default: // Bad parse or nothing.
 				printErrorHelp();
 				printf("Type PPFileSync -h to see a list of all options.\n");
 				exit(EXIT_FAILURE);
 		}
-
 	}
 
+	// Checks for lacking input
 	if(destination == NULL && source == NULL)
 	{
 		printErrorHelp();
@@ -124,12 +136,14 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-
+	// Initialize daemon/program
 	signal(SIGTERM, exitHandler);
 	signal(SIGQUIT, exitHandler);
 	signal(SIGUSR1, forceHandler);
 	if(gDaemonize)
 		initDaemon(false);
+	else
+		startUpSysLog();
 
 	while (gProgramRunning)
 	{
@@ -151,7 +165,7 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
-	LOGNOTICE("Program Ended!");
+	LOGNOTICE("Program Ended!")
 	shutDownSysLog();
 	return 0;
 }

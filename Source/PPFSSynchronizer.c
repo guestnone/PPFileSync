@@ -1,10 +1,25 @@
+//---------------------------------------------------------------------------
+/*
+	Copyright (C) 2019 Patrick Rećko, Paweł Krzywosz
 
+	This source file is released under the MIT License.
+	See LICENSE.md for full terms. This notice is not to be removed.
+*/
+//---------------------------------------------------------------------------
 #include "PPFSSynchronizer.h"
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
 
 #define MAX_SIZE 1048576
-
+/**
+ * Copies the files using the memory mapping (mmap).
+ * @param inputFd Source file descriptor to copy the files.
+ * @param outputFd To which file descriptor the source should be written.
+ *
+ * @note On 32-bit version this only supports 4GB files, This is due of us mapping the entire file and not the
+ *       parts of it, which should be a better idea. L1imit AFAIK on 64-bit ones in our use is not noticeable
+ *       so I'm leaving as it is.
+ */
 void copyLargeData(int inputFd, int outputFd)
 {
 	struct stat inputStats = {0};
@@ -43,6 +58,11 @@ void copyLargeData(int inputFd, int outputFd)
 	}
 }
 
+/**
+ * Copies the files using the read/write Linux API commands.
+ * @param inputFd Source file descriptor to copy the files.
+ * @param outputFd To which file descriptor the source should be written.tFd
+ */
 void copySmallData(int inputFd, int outputFd)
 {
 	char buffer[1024];
@@ -73,6 +93,7 @@ int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThre
 	copyDataFromFileDesc(sourceFd, destFd, fileSizeThreshold);
 	closeFileDesc(sourceFd);
 	closeFileDesc(destFd);
+	return 0;
 }
 
 void copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshold)

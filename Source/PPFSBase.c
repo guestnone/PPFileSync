@@ -1,4 +1,11 @@
+//---------------------------------------------------------------------------
+/*
+	Copyright (C) 2019 Patrick Rećko, Paweł Krzywosz
 
+	This source file is released under the MIT License.
+	See LICENSE.md for full terms. This notice is not to be removed.
+*/
+//---------------------------------------------------------------------------
 #include "PPFSBase.h"
 
 #include "PPFSPrerequisites.h"
@@ -57,18 +64,17 @@ void resetToMainDirectory(void)
 	}
 }
 
-void computeMD5HashFromLoc(char* fileLocation, unsigned char* out)
+void computeMD5HashFromLoc(char *fileLocation, unsigned char *out)
 {
 	MD5_CTX c;
 	char buf[512];
 	ssize_t bytes;
 	int fd = open(fileLocation, O_RDONLY);
-	//unsigned char out[MD5_DIGEST_LENGTH];
 
 	MD5_Init(&c);
-	bytes=read(fd, buf, 512);
+	bytes = read(fd, buf, 512);
 
-	while(bytes > 0)
+	while (bytes > 0)
 	{
 		MD5_Update(&c, buf, bytes);
 		bytes = read(fd, buf, 512);
@@ -77,53 +83,32 @@ void computeMD5HashFromLoc(char* fileLocation, unsigned char* out)
 	close(fd);
 }
 
-void strreverse(char* begin, char* end) {
-
+void strreverse(char *begin, char *end)
+{
 	char aux;
-
-	while(end>begin)
-
-		aux=*end, *end--=*begin, *begin++=aux;
-
+	while (end > begin)
+		aux = *end, *end-- = *begin, *begin++ = aux;
 }
 
-void itoa(int value, char* str, int base) {
-
+void itoa(int value, char *str, int base)
+{
 	static char num[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-
-	char* wstr=str;
-
+	char *wstr = str;
 	int sign;
-
-
-
-
 	// Validate base
-
-	if (base<2 || base>35){ *wstr='\0'; return; }
-
-
-
+	if (base < 2 || base > 35)
+	{
+		*wstr = '\0';
+		return;
+	}
 	// Take care of sign
-
-	if ((sign=value) < 0) value = -value;
-
-
-
-
+	if ((sign = value) < 0)
+		value = -value;
 	// Conversion. Number is reversed.
-
-	do *wstr++ = num[value%base]; while(value/=base);
-
-	if(sign<0) *wstr++='-';
-
-	*wstr='\0';
-
-
-
+	do *wstr++ = num[value % base]; while (value /= base);
+	if (sign < 0)
+		*wstr++ = '-';
+	*wstr = '\0';
 	// Reverse string
-
-
-	strreverse(str,wstr-1);
-
+	strreverse(str, wstr - 1);
 }

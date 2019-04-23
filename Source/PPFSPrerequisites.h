@@ -1,3 +1,11 @@
+//---------------------------------------------------------------------------
+/*
+	Copyright (C) 2019 Patrick Rećko, Paweł Krzywosz
+
+	This source file is released under the MIT License.
+	See LICENSE.md for full terms. This notice is not to be removed.
+*/
+//---------------------------------------------------------------------------
 #pragma once
 
 // C library...
@@ -18,4 +26,5 @@
 #include <syslog.h>
 #include <dirent.h>
 
+// OpenSSL library includes...
 #include <openssl/md5.h>

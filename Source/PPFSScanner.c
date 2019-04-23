@@ -1,4 +1,11 @@
+//---------------------------------------------------------------------------
+/*
+	Copyright (C) 2019 Patrick Rećko, Paweł Krzywosz
 
+	This source file is released under the MIT License.
+	See LICENSE.md for full terms. This notice is not to be removed.
+*/
+//---------------------------------------------------------------------------
 #include "PPFSScanner.h"
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
@@ -32,13 +39,6 @@ int doesFileExist(const char *filename)
 	else // -1
 		return 0;
 }
-/*
-bool checkIfSameFile(struct stat sourceStat, struct stat destinationStat)
-{
-
-	return true;
-}
-*/
 
 bool checkIfSameFile(char* source, char* destination)
 {
