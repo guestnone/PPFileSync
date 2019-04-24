@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 	int recursive = 0;
 	int threshold = 100;
 	int argument = 0;
+	DIR *fCheck;
 
 	if(argc < 2)
 	{
@@ -136,6 +137,22 @@ int main(int argc, char *argv[])
 		printf("Type PPFileSync -h to see a list of all options.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	// Checks for folder existence
+	fCheck = opendir(source);
+	if (fCheck == NULL)
+	{
+		printf("Following source folder doesn't exist.\n");
+		exit(EXIT_FAILURE);
+	}
+	closedir(fCheck);
+	fCheck = opendir(destination);
+	if (fCheck == NULL)
+	{
+		printf("Following destination folder doesn't exist.\n");
+		exit(EXIT_FAILURE);
+	}
+	closedir(fCheck);
 
 	// Initialize daemon/program
 	signal(SIGTERM, exitHandler);
