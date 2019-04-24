@@ -90,11 +90,11 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 						rmdirStatus = rmdir(dPath);
 						if (rmdirStatus == 0)
 						{
-							LOGINFO("directory doesnt exist in source folder. deleted directory succesfully: %s", file->d_name)
+							LOGINFO("directory doesnt exist in source folder. deleted directory succesfully: %s", dPath)
 						}
 						else
 						{
-							LOGFATAL("directory doesnt exist in source folder. couldn't delete directory: %s", file->d_name)
+							LOGFATAL("directory doesnt exist in source folder. couldn't delete directory: %s", dPath)
 							exit(EXIT_FAILURE);
 						}
 					}
@@ -114,11 +114,11 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				if (ret == 0)
 				{
 					LOGINFO("file doesnt exist in source folder. succesfully deleted file: %s",
-							file->d_name)
+							dPath)
 				}
 				else
 				{
-					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s", file->d_name)
+					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s", dPath)
 					exit(EXIT_FAILURE);
 				}
 				printf("file does not exist: %s\n", file->d_name);
@@ -131,11 +131,11 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					int ret = removeFile(dPath);
 					if (ret == 0)
 					{
-						LOGINFO("file is old. successfuly deleted file: %s",file->d_name);
+						LOGINFO("file doesnt exist in source folder. successfuly deleted file: %s",dPath);
 					}
 					else
 					{
-						LOGFATAL("file is old. couldn't delete file: %s", file->d_name);
+						LOGFATAL("file doesnt exist in source folder. couldn't delete file: %s", dPath);
 						exit(EXIT_FAILURE);
 					}
 					printf("file is old: %s\n", file->d_name);
@@ -178,11 +178,11 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 
 						if (mkdirStatus == 0)
 						{
-							LOGINFO("Created directory: %s", file->d_name)
+							LOGINFO("Created directory: %s", dPath)
 						}
 						else
 						{
-							LOGFATAL("couldn't create directory: %s, Stopping...", file->d_name)
+							LOGFATAL("couldn't create directory: %s, Stopping...", dPath)
 							exit(EXIT_FAILURE);
 						}
 						//create dir
@@ -205,7 +205,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			setFilePath(file->d_name, destination_path, dPath);
 			if (!doesFileExist(dPath))
 			{
-				LOGINFO("Creating file in destination: %s", file->d_name)
+				LOGINFO("Creating file in destination: %s", dPath)
 				int sourceFd = open(sPath, O_RDONLY, openMode);
 				int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
 				if (destFd == -1) // File may exist, try again without creation flag
@@ -228,7 +228,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 			{
 				if(!checkIfSameFile(sPath, dPath))
 				{
-					LOGINFO("Updating file: %s", file->d_name)
+					LOGINFO("Updating file: %s", dPath)
 					int sourceFd = open(sPath, O_RDONLY, openMode);
 					int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
 					if (destFd == -1) // File may exist, try again without creation flag
