@@ -61,7 +61,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 	DIR *dest = opendir(destination_path);
 	struct dirent *file;
-	printf("source: %s\ndestination: %s\n", source_path, destination_path);
+	
 
 	while (file = readdir(dest))
 	{
@@ -79,7 +79,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					{
 						if (checkIfSameFile(sPath, dPath))
 						{
-							printf("dir: %s\n", file->d_name);
+							
 							performSynchronization(sPath, dPath, recursive, threshold);
 						}
 					}
@@ -121,7 +121,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s", dPath)
 					exit(EXIT_FAILURE);
 				}
-				printf("file does not exist: %s\n", file->d_name);
+				
 			}
 			else
 			{
@@ -138,9 +138,9 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 						LOGFATAL("file doesnt exist in source folder. couldn't delete file: %s", dPath);
 						exit(EXIT_FAILURE);
 					}
-					printf("file is old: %s\n", file->d_name);
+					
 				}
-				else printf("file is good: %s\n", file->d_name);
+				
 			}
 
 		}
@@ -191,7 +191,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					else
 					{
 						
-						printf("dir exist: %s\n", file->d_name);
+						
 						copyPasteElements(sPath,dPath,recursive,threshold);
 					}
 				}
@@ -222,7 +222,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 				closeFileDesc(sourceFd);
 				
 
-				printf("copying file: %s\n", file->d_name);
+				
 			}
 			else
 			{
@@ -243,11 +243,11 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					copyDataFromFileDesc(sourceFd, destFd, threshold);
 					closeFileDesc(destFd);
 					closeFileDesc(sourceFd);
-					printf("file Changed: %s\n", file->d_name);
+					
 
 				}
 				else
-					printf("file is good: %s\n", file->d_name);
+					
 			};
 		}
 
