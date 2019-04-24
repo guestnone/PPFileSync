@@ -61,7 +61,7 @@ void printFullHelp()
 		"  -d DESTDIR          Uses this destination directory for synchronization.\n"
         "  -R                  All directories on the source will be synchronized instead of only files on root directory.\n"
 		"  -t FILETHRESHOLD    Threshold in bytes where the files will use more faster, copy_file_range-based copy interface.\n"
-        "  -w TIME             Wait time (in minutes) between every synchronization.\n"
+        "  -w TIME             Wait time (in seconds) between every synchronization.\n"
 		"  -v                  verbose mode (don't daemonize, prints debug informations)\n");
 }
 

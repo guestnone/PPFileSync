@@ -63,14 +63,14 @@ int main()
 	time_t start, end;
 	clock_t cpuStart, cpuStop;
 	// Test files for copying.
-	char* s10 = "bench/10mb.zip";
-	char* d10 = "bench/10mb.zip.copy";
+	char* s10 = "bench/10mb.mp3";
+	char* d10 = "bench/10mb.mp3.copy";
 	char* s100 = "bench/100mb.zip";
 	char* d100 = "bench/100mb.zip.copy";
 	char* s1000 = "bench/1000mb.zip";
 	char* d1000 = "bench/1000mb.zip.copy";
-	char* s8000 = "bench/8000mb.zip";
-	char* d8000 = "bench/8000mb.zip.copy";
+	char* s4000 = "bench/4000mb.zip";
+	char* d4000 = "bench/4000mb.zip.copy";
 
 	// 10 MB
 	printf("10 MB\n");
@@ -93,7 +93,7 @@ int main()
 	printf("100 MB\n");
 	start = time(NULL);
 	cpuStart = clock();
-	copyDataFromPath(s100, d100, 10000);
+	copyDataFromPath(s100, d100, 1000000);
 	end = time(NULL);
 	cpuStop = clock();
 	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
@@ -110,7 +110,7 @@ int main()
 	printf("1000 MB\n");
 	start = time(NULL);
 	cpuStart = clock();
-	copyDataFromPath(s1000, d1000, 10000);
+	copyDataFromPath(s1000, d1000, 1000000);
 	end = time(NULL);
 	cpuStop = clock();
 	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
@@ -124,21 +124,21 @@ int main()
 	removeFile(d1000);
 
 	// 8000 MB
-	printf("8000 MB\n");
+	printf("4000 MB\n");
 	start = time(NULL);
 	cpuStart = clock();
-	copyDataFromPath(s8000, d8000, 10000);
+	copyDataFromPath(s4000, d4000, 1000000);
 	end = time(NULL);
 	cpuStop = clock();
 	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
-	removeFile(d8000);
+	removeFile(d4000);
 	start = time(NULL);
 	cpuStart = clock();
-	copyDataFromPath(s8000, d8000, 5);
+	copyDataFromPath(s4000, d4000, 5);
 	end = time(NULL);
 	cpuStop = clock();
 	printf("  copy_file_range: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
-	removeFile(d8000);
+	removeFile(d4000);
 
 	return 0;
 

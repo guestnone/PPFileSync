@@ -18,7 +18,7 @@
  *
  * @note Every file open or copy error are treated as fatal and will crash the program.
  */
-int copyDataFromPath(char* sourcePath, char* destPath, unsigned int fileSizeThreshold);
+int copyDataFromPath(char* sourcePath, char* destPath, uint64_t fileSizeThreshold);
 
 /**
  * Creates the copy of the source file to destination based on the file descriptors.
@@ -28,7 +28,7 @@ int copyDataFromPath(char* sourcePath, char* destPath, unsigned int fileSizeThre
  *
  * @note Every file copy error are treated as fatal and will crash the program.
  */
-void copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshold);
+void copyDataFromFileDesc(int sourceFd, int destFd, uint64_t fileSizeThreshold);
 
 /**
  * Removes the file from the given path. Wrapper around unlink.

@@ -58,7 +58,7 @@ void copySmallData(int inputFd, int outputFd)
 	while (bytesRead == sizeof(buffer));
 }
 
-int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThreshold)
+int copyDataFromPath(char *sourcePath, char *destPath, uint64_t fileSizeThreshold)
 {
 	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 	int sourceFd = open(sourcePath, O_RDONLY, openMode);
@@ -78,7 +78,7 @@ int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThre
 	return 0;
 }
 
-void copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshold)
+void copyDataFromFileDesc(int sourceFd, int destFd, uint64_t fileSizeThreshold)
 {
 	struct stat inputStats = {0};
 	char filePathSource[PATH_MAX], filePathDest[PATH_MAX];
