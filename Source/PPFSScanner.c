@@ -213,7 +213,9 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					}
 					else
 					{
+						
 						printf("dir exist: %s\n", file->d_name);
+						copyPasteElements(sPath,dPath,recursive,threshold);
 					}
 				}
 			}
