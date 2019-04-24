@@ -1,13 +1,13 @@
 set(PPFS_INC_NOFILTER
 	"PPFSPrerequisites.h"
-	"PPFSScanner.h"
 	"PPFSSynchronizer.h"
+	"PPFSFileOps.h"
 	"PPFSBase.c"
 )
 
 set(PPFS_SRC_NOFILTER
-	"PPFSScanner.c"
 	"PPFSSynchronizer.c"
+	"PPFSFileOps.c"
 	"PPFSBase.c"
 )
 set(PPFS_SRC_MAIN_NOFILTER

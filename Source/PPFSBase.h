@@ -16,6 +16,7 @@
 #define LOGINFO(...) syslog(LOG_INFO, __VA_ARGS__);
 #define LOGNOTICE(...) syslog(LOG_NOTICE, __VA_ARGS__);
 #define LOGFATAL(...) syslog(LOG_CRIT, __VA_ARGS__);
+#define LOGDEBUG(...) syslog(LOG_DEBUG, __VA_ARGS__);
 
 /**
  * Opens the system log for the program

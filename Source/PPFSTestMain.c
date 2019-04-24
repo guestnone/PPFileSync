@@ -8,18 +8,19 @@
 //---------------------------------------------------------------------------
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
-#include "PPFSSynchronizer.h"
+#include "PPFSFileOps.h"
 
 // Tu use the test code you need to select what test you want to use by
 // leaving only one of the defines (all other are uncommented) and then recompiling the
 // Test program.
 // Crude and using a test framework is better idea but I(guest_none) am running out of time so here we go.
 //#define TEST_HASHING
-#define TEST_COPY
+//#define TEST_COPY
+#define TEST_BENCHMARK
 
 int main()
 {
-	/// This Test program tests the hashing using the OpenSSL's MD5 implementation
+	/// This code tests the hashing using the OpenSSL's MD5 implementation
 	/// by comparing two files.
 	/// Prints OK if two files are matching, NOK if they're not.
 #if defined(TEST_HASHING)
@@ -52,5 +53,94 @@ int main()
 	startUpSysLog();
 	copyDataFromPath(s, d, 100);
 	shutDownSysLog();
+	return 0;
+#endif
+
+	// This file benchmarks the file copying mechanism against files of various size and
+	// copy type by measuring the time in which the code was called and returned.
+	// Displays the results on the console
+#if defined(TEST_BENCHMARK)
+	time_t start, end;
+	clock_t cpuStart, cpuStop;
+	// Test files for copying.
+	char* s10 = "bench/10mb.zip";
+	char* d10 = "bench/10mb.zip.copy";
+	char* s100 = "bench/100mb.zip";
+	char* d100 = "bench/100mb.zip.copy";
+	char* s1000 = "bench/1000mb.zip";
+	char* d1000 = "bench/1000mb.zip.copy";
+	char* s8000 = "bench/8000mb.zip";
+	char* d8000 = "bench/8000mb.zip.copy";
+
+	// 10 MB
+	printf("10 MB\n");
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s10, d10, 10000);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d10);
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s10, d10, 5);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  copy_file_range: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d10);
+
+	// 100 MB
+	printf("100 MB\n");
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s100, d100, 10000);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d100);
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s100, d100, 5);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  copy_file_range: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d100);
+
+	// 1000 MB
+	printf("1000 MB\n");
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s1000, d1000, 10000);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d1000);
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s1000, d1000, 5);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  copy_file_range: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d1000);
+
+	// 8000 MB
+	printf("8000 MB\n");
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s8000, d8000, 10000);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  Read-write: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d8000);
+	start = time(NULL);
+	cpuStart = clock();
+	copyDataFromPath(s8000, d8000, 5);
+	end = time(NULL);
+	cpuStop = clock();
+	printf("  copy_file_range: Normal - %ld, CPU: %.2lf\n", end - start, (double) (cpuStop - cpuStart) / CLOCKS_PER_SEC);
+	removeFile(d8000);
+
+	return 0;
+
 #endif
 }

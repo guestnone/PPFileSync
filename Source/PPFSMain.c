@@ -8,8 +8,8 @@
 //---------------------------------------------------------------------------
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
-#include "PPFSScanner.h"
 #include "PPFSSynchronizer.h"
+#include "PPFSFileOps.h"
 
 volatile bool gProgramRunning = true;
 volatile bool gPerformScan = true;
@@ -44,7 +44,7 @@ void initDaemon(bool withPathReset)
 	if (withPathReset)
 		resetToMainDirectory();
 	closeStandardConsole();
-	LOGNOTICE("Daemon Started on pid=%d", sid)
+	LOGNOTICE("Daemon Started!")
 }
 
 void printErrorHelp()
@@ -62,7 +62,7 @@ void printFullHelp()
         "  -R                  All directories on the source will be synchronized instead of only files on root directory.\n"
 		"  -t FILETHRESHOLD    Threshold in bytes where the files will use more faster, copy_file_range-based copy interface.\n"
         "  -w TIME             Wait time (in minutes) between every synchronization.\n"
-		"  -v                  verbose mode (don't daemonize)\n");
+		"  -v                  verbose mode (don't daemonize, prints debug informations)\n");
 }
 
 int main(int argc, char *argv[])
@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
 				break;
 			case 'R': // Recursive
 				recursive = 1;
-				printf("recursive\n");
 				break;
 			case 't': // Threshold.
 				threshold = atoi(optarg);
@@ -159,7 +158,9 @@ int main(int argc, char *argv[])
 	signal(SIGQUIT, exitHandler);
 	signal(SIGUSR1, forceHandler);
 	if(gDaemonize)
+	{
 		initDaemon(false);
+	}
 	else
 		startUpSysLog();
 

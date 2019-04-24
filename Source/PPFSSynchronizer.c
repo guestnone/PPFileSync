@@ -9,113 +9,249 @@
 #include "PPFSSynchronizer.h"
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
+#include "PPFSFileOps.h"
 
-/**
- * Copies the files using the copy_file_range kernel function (copies directly in kernel).
- * @param inputFd Source file descriptor to copy the files.
- * @param outputFd To which file descriptor the source should be written.
- */
-void copyLargeData(int inputFd, int outputFd)
+void setFilePath(char *fileName, char *folderPath, char* out)
 {
-	struct stat inputStats = {0};
-	struct stat outputStats = {0};
 
-	fstat(inputFd, &inputStats);
-	fstat(outputFd, &outputStats);
-	int filesize = inputStats.st_size;
-	loff_t len, ret;
-	ftruncate(outputFd, filesize);
-	lseek(outputFd, filesize - 1, SEEK_SET);
-
-	len = inputStats.st_size;
-	do
-	{
-		ret = copy_file_range(inputFd, NULL, outputFd, NULL, len, 0);
-		if (ret == -1)
-		{
-			LOGFATAL("copy_file_range failed, stopping...")
-			exit(EXIT_FAILURE);
-		}
-
-		len -= ret;
-	} while (len > 0);
+	strcpy(out, folderPath);
+	strcat(out, "/");
+	strcat(out, fileName);
 
 }
 
-/**
- * Copies the files using the read/write Linux API commands.
- * @param inputFd Source file descriptor to copy the files.
- * @param outputFd To which file descriptor the source should be written.tFd
- */
-void copySmallData(int inputFd, int outputFd)
+struct stat getStatFile(char *filePath)
 {
-	char buffer[1024];
-	memset(buffer, '0', sizeof(buffer));
-	int bytesRead;
-	do
-	{
-		bytesRead = read(inputFd, buffer, sizeof(buffer));
-		write(outputFd, buffer, bytesRead);
-	}
-	while (bytesRead == sizeof(buffer));
+	struct stat fileinfo;
+	int data = stat(filePath, &fileinfo);
+	return fileinfo;
 }
 
-int copyDataFromPath(char *sourcePath, char *destPath, unsigned int fileSizeThreshold)
+int doesFileExist(const char *filename)
+{
+	struct stat buffer;
+	int exist = stat(filename, &buffer);
+	if (exist == 0)
+		return 1;
+	else // -1
+		return 0;
+}
+
+bool checkIfSameFile(char* source, char* destination)
+{
+	unsigned char sourceHash[MD5_DIGEST_LENGTH];
+	unsigned char destHash[MD5_DIGEST_LENGTH];
+	computeMD5HashFromLoc(source, sourceHash);
+	computeMD5HashFromLoc(destination, destHash);
+	if(memcmp(sourceHash, destHash, MD5_DIGEST_LENGTH) == 0)
+		return true;
+	return false;
+}
+
+bool checkIfNotInSource(char* source, char* destination)
+{
+	struct stat srcStat, destStat;
+	if(stat(source, &srcStat) == -1 && stat(destination, &destStat) != -1)
+		return true;
+	return false;
+}
+
+void performSynchronization(char *source_path, char *destination_path, int recursive, int threshold)
 {
 	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-	int sourceFd = open(sourcePath, O_RDONLY, openMode);
-	int destFd = open(destPath, O_RDWR | O_EXCL | O_CREAT, openMode);
-	if (destFd == -1) // File may exist, try again without creation flag
+	DIR *dest = opendir(destination_path);
+	struct dirent *file;
+	printf("source: %s\ndestination: %s\n", source_path, destination_path);
+
+	while (file = readdir(dest))
 	{
-		destFd = open(destPath, O_RDWR, openMode);
-		if (destFd == -1)
+		if (file->d_type == DT_DIR)
 		{
-			LOGFATAL("Destination file couldn't be open, stopping.")
-			exit(EXIT_FAILURE);
+			if (recursive == 1)
+			{
+				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
+				{
+					char sPath[PATH_MAX];
+					char dPath[PATH_MAX];
+					setFilePath(file->d_name, source_path, sPath);
+					setFilePath(file->d_name, destination_path, dPath);
+					if (doesFileExist(sPath))
+					{
+						if (checkIfSameFile(sPath, dPath))
+						{
+							printf("dir: %s\n", file->d_name);
+							performSynchronization(sPath, dPath, recursive, threshold);
+						}
+					}
+					else
+					{
+						performSynchronization(sPath, dPath, recursive, threshold);
+						int rmdirStatus = 0;
+						rmdirStatus = rmdir(dPath);
+						if (rmdirStatus == 0)
+						{
+							LOGINFO("directory doesnt exist in source folder. deleted directory succesfully: %s", file->d_name)
+						}
+						else
+						{
+							LOGFATAL("directory doesnt exist in source folder. couldn't delete directory: %s", file->d_name)
+							exit(EXIT_FAILURE);
+						}
+					}
+
+				}
+			}
 		}
+		else
+		{
+			char sPath[PATH_MAX];
+			char dPath[PATH_MAX];
+			setFilePath(file->d_name, source_path, sPath);
+			setFilePath(file->d_name, destination_path, dPath);
+			if (!doesFileExist(sPath))
+			{
+				int ret = removeFile(dPath);
+				if (ret == 0)
+				{
+					LOGINFO("file doesnt exist in source folder. succesfully deleted file: %s",
+							file->d_name)
+				}
+				else
+				{
+					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s", file->d_name)
+					exit(EXIT_FAILURE);
+				}
+				printf("file does not exist: %s\n", file->d_name);
+			}
+			else
+			{
+
+				if (checkIfNotInSource(sPath, dPath))
+				{
+					int ret = removeFile(dPath);
+					if (ret == 0)
+					{
+						LOGINFO("file is old. successfuly deleted file: %s",file->d_name);
+					}
+					else
+					{
+						LOGFATAL("file is old. couldn't delete file: %s", file->d_name);
+						exit(EXIT_FAILURE);
+					}
+					printf("file is old: %s\n", file->d_name);
+				}
+				else printf("file is good: %s\n", file->d_name);
+			}
+
+		}
+
 	}
-	copyDataFromFileDesc(sourceFd, destFd, fileSizeThreshold);
-	closeFileDesc(sourceFd);
-	closeFileDesc(destFd);
-	return 0;
+	closedir(dest);
 }
 
-void copyDataFromFileDesc(int sourceFd, int destFd, unsigned int fileSizeThreshold)
-{
-	struct stat inputStats = {0};
-	char filePathSource[PATH_MAX], filePathDest[PATH_MAX];
-	char tmpFdPathSrc[PATH_MAX], tmpFdPathDest[PATH_MAX];
-	char tmpFdAsStrSrc[2], tmpFdAsStrDest[2];
-	itoa(sourceFd, tmpFdAsStrSrc, 10);
-	itoa(destFd, tmpFdAsStrDest, 10);
-	strcpy(tmpFdPathSrc, "/proc/self/fd/");
-	strcpy(tmpFdPathDest, "/proc/self/fd/");
-	strcat(tmpFdPathSrc, tmpFdAsStrSrc);
-	strcat(tmpFdPathDest, tmpFdAsStrDest);
-	fstat(sourceFd, &inputStats);
 
-	readlink(tmpFdPathSrc, filePathSource, PATH_MAX);
-	readlink(tmpFdPathDest, filePathDest, PATH_MAX);
-	if (inputStats.st_size > fileSizeThreshold*1000000)
+void copyPasteElements(char *source_path, char *destination_path, int recursive, int threshold)
+{
+	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+	DIR *src = opendir(source_path);
+	struct dirent *file;
+
+	file = readdir(src);
+	while (file)
 	{
-		LOGINFO("Copying file %s to %s using copy_file_range...", filePathSource, filePathDest)
-		copyLargeData(sourceFd, destFd);
+		if (file->d_type == DT_DIR)
+		{
+			if (recursive == 1)
+			{
+				if (!(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0))
+				{
+					char sPath[PATH_MAX];
+					char dPath[PATH_MAX];
+					setFilePath(file->d_name, source_path, sPath);
+					setFilePath(file->d_name, destination_path, dPath);
+					if (!doesFileExist(dPath))
+					{
+						printf("creating dir: %s\n", file->d_name);
+						struct stat toGetModeT;
+						stat(sPath, &toGetModeT);
+						int mkdirStatus = mkdir(dPath, toGetModeT.st_mode);
+
+						if (mkdirStatus == 0)
+						{
+							LOGINFO("Created directory: %s", file->d_name)
+						}
+						else
+						{
+							LOGFATAL("couldn't create directory: %s, Stopping...", file->d_name)
+							exit(EXIT_FAILURE);
+						}
+						//create dir
+						copyPasteElements(sPath, dPath, recursive, threshold);
+					}
+					else
+					{
+						
+						printf("dir exist: %s\n", file->d_name);
+						copyPasteElements(sPath,dPath,recursive,threshold);
+					}
+				}
+			}
+		}
+		else
+		{
+			char sPath[PATH_MAX];
+			char dPath[PATH_MAX];
+			setFilePath(file->d_name, source_path, sPath);
+			setFilePath(file->d_name, destination_path, dPath);
+			if (!doesFileExist(dPath))
+			{
+				LOGINFO("Creating file in destination: %s", file->d_name)
+				int sourceFd = open(sPath, O_RDONLY, openMode);
+				int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
+				if (destFd == -1) // File may exist, try again without creation flag
+				{
+					destFd = open(dPath, O_RDWR, openMode);
+					if (destFd == -1)
+					{
+						LOGFATAL("One of the files couldn't be open, stopping.")
+						exit(EXIT_FAILURE);
+					}
+				}
+				copyDataFromFileDesc(sourceFd, destFd, threshold);
+				closeFileDesc(destFd);
+				closeFileDesc(sourceFd);
+				
+
+				printf("copying file: %s\n", file->d_name);
+			}
+			else
+			{
+				if(!checkIfSameFile(sPath, dPath))
+				{
+					LOGINFO("Updating file: %s", file->d_name)
+					int sourceFd = open(sPath, O_RDONLY, openMode);
+					int destFd = open(dPath, O_RDWR | O_EXCL | O_CREAT, openMode);
+					if (destFd == -1) // File may exist, try again without creation flag
+					{
+						destFd = open(dPath, O_RDWR, openMode);
+						if (destFd == -1)
+						{
+							LOGFATAL("One of the files couldn't be open, stopping.")
+							exit(EXIT_FAILURE);
+						}
+					}
+					copyDataFromFileDesc(sourceFd, destFd, threshold);
+					closeFileDesc(destFd);
+					closeFileDesc(sourceFd);
+					printf("file Changed: %s\n", file->d_name);
+
+				}
+				else
+					printf("file is good: %s\n", file->d_name);
+			};
+		}
+
+		file = readdir(src);
 	}
-	else
-	{
-		LOGINFO("Copying file %s to %s using read/write...", filePathSource, filePathDest)
-		copySmallData(sourceFd, destFd);
-	}
+	closedir(src);
 }
-
-int removeFile(char *path)
-{
-	return unlink(path);
-}
-
-int closeFileDesc(int fd)
-{
-	return close(fd);
-}
-
-
