@@ -9,5 +9,5 @@ Test: $(OBJ) $(TESTMAIN)
 $(OBJ): Source/PPFSBase.h Source/PPFSSynchronizer.h Source/PPFSFileOps.h Source/PPFSPrerequisites.h
 .PHONY: clean
 clean:
-	rm -f *.o
+	rm -f *.o ./Source/*.o PPFileSync Test
 
