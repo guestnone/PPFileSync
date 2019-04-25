@@ -32,6 +32,7 @@ void copyLargeData(int inputFd, int outputFd)
 		if (ret == -1)
 		{
 			LOGFATAL("copy_file_range failed, stopping...")
+			printf("copy_file_range failed, stopping...\n");
 			exit(EXIT_FAILURE);
 		}
 
@@ -68,7 +69,8 @@ int copyDataFromPath(char *sourcePath, char *destPath, uint64_t fileSizeThreshol
 		destFd = open(destPath, O_RDWR, openMode);
 		if (destFd == -1)
 		{
-			LOGFATAL("Destination file couldn't be open, stopping.")
+			LOGFATAL("Destination file %s couldn't be open, stopping.", sourcePath)
+			printf("Destination file %s couldn't be open, stopping.", sourcePath);
 			exit(EXIT_FAILURE);
 		}
 	}

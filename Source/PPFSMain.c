@@ -60,8 +60,8 @@ void printFullHelp()
         "  -s SOURCEDIR        Uses this source directory for synchronization.\n"
 		"  -d DESTDIR          Uses this destination directory for synchronization.\n"
         "  -R                  All directories on the source will be synchronized instead of only files on root directory.\n"
-		"  -t FILETHRESHOLD    Threshold in bytes where the files will use more faster, copy_file_range-based copy interface.\n"
-        "  -w TIME             Wait time (in seconds) between every synchronization.\n"
+		"  -t FILETHRESHOLD    Threshold in bytes where the files will use more faster, copy_file_range-based copy interface (default: 100).\n"
+        "  -w TIME             Wait time (in seconds) between every synchronization (default: 300).\n"
 		"  -v                  verbose mode (don't daemonize, prints debug informations)\n");
 }
 

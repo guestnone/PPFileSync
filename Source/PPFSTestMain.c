@@ -9,14 +9,15 @@
 #include "PPFSPrerequisites.h"
 #include "PPFSBase.h"
 #include "PPFSFileOps.h"
+#include "PPFSSynchronizer.h"
 
 // Tu use the test code you need to select what test you want to use by
 // leaving only one of the defines (all other are uncommented) and then recompiling the
 // Test program.
 // Crude and using a test framework is better idea but I(guest_none) am running out of time so here we go.
 //#define TEST_HASHING
-//#define TEST_COPY
-#define TEST_BENCHMARK
+#define TEST_COPY
+//#define TEST_BENCHMARK
 
 int main()
 {
@@ -25,9 +26,9 @@ int main()
 	/// Prints OK if two files are matching, NOK if they're not.
 #if defined(TEST_HASHING)
 	// First file to compute hash.
-	char s[] = "/home/guest_none/DevelopM/Private/guest_none/school/os/task_4/test/a/ping.png";
+	char s[] = "Testing/InputRecko/d/ping.png";
 	// Second file to compute hash.
-	char d[] = "/home/guest_none/DevelopM/Private/guest_none/school/os/task_4/test/a/ping2.png";
+	char d[] = "Testing/InputRecko/d/ping2.png";
 	unsigned char sourceHash[MD5_DIGEST_LENGTH];
 	unsigned char destHash[MD5_DIGEST_LENGTH];
 	computeMD5HashFromLoc(s, sourceHash);
@@ -45,13 +46,24 @@ int main()
 	// This code tests the file copying mechanisms. It creates the file on the
 #if defined(TEST_COPY)
 	// Source file to duplicate
-	char s[] = "/home/guest_none/DevelopM/Private/guest_none/school/os/task_4/test/a/movo.mkv";
+	char s[] = "Testing/InputRecko/c/mov_c.mkv";
 	// Destination file where the file should be copied.
-	char d[] = "/home/guest_none/DevelopM/Private/guest_none/school/os/task_4/test/a/movietestcopy.mkv";
-	mode_t openMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+	char d[] = "Testing/InputRecko/c/mov_c_copy.mkv";
 
 	startUpSysLog();
 	copyDataFromPath(s, d, 100);
+	unsigned char sourceHash[MD5_DIGEST_LENGTH];
+	unsigned char destHash[MD5_DIGEST_LENGTH];
+	computeMD5HashFromLoc(s, sourceHash);
+	computeMD5HashFromLoc(d, destHash);
+	int result = memcmp(sourceHash, destHash, MD5_DIGEST_LENGTH);
+	if(result == 0)
+	{
+		printf("OK!!!");
+	}
+	else
+		printf("NOK");
+	removeFile(d);
 	shutDownSysLog();
 	return 0;
 #endif
@@ -59,6 +71,7 @@ int main()
 	// This file benchmarks the file copying mechanism against files of various size and
 	// copy type by measuring the time in which the code was called and returned.
 	// Displays the results on the console
+	// NOTE: Requires files on specific size. You need to get them yourself.
 #if defined(TEST_BENCHMARK)
 	time_t start, end;
 	clock_t cpuStart, cpuStop;

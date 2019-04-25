@@ -11,13 +11,18 @@
 #include "PPFSBase.h"
 #include "PPFSFileOps.h"
 
+/**
+ * Create the full path from the two strings
+ * @param fileName
+ * @param folderPath
+ * @param out where to write the final string
+ * @note internal function.
+ */
 void setFilePath(char *fileName, char *folderPath, char* out)
 {
-
 	strcpy(out, folderPath);
 	strcat(out, "/");
 	strcat(out, fileName);
-
 }
 
 struct stat getStatFile(char *filePath)
@@ -37,6 +42,13 @@ int doesFileExist(const char *filename)
 		return 0;
 }
 
+/**
+ * Checks the files if they're both the same by check-summing
+ * @param source path to first file
+ * @param destination path to secons file
+ * @return true if they're both the same, otherwise false.
+ * @note internal function
+ */
 bool checkIfSameFile(char* source, char* destination)
 {
 	unsigned char sourceHash[MD5_DIGEST_LENGTH];
@@ -95,6 +107,7 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 						else
 						{
 							LOGFATAL("directory doesnt exist in source folder. couldn't delete directory: %s", dPath)
+							printf("directory doesnt exist in source folder. couldn't delete directory: %s", dPath);
 							exit(EXIT_FAILURE);
 						}
 					}
@@ -113,15 +126,16 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 				int ret = removeFile(dPath);
 				if (ret == 0)
 				{
-					LOGINFO("file doesnt exist in source folder. succesfully deleted file: %s",
+					LOGINFO("file doesn't exist in source folder. succesfully deleted file: %s",
 							dPath)
 				}
 				else
 				{
-					LOGFATAL("file doesnt exist in source folder. couldnt delete file: %s", dPath)
+					LOGFATAL("file doesn't exist in source folder. couldn't delete file: %s", dPath)
+					printf("file doesn't exist in source folder. couldn't delete file: %s\n", dPath);
 					exit(EXIT_FAILURE);
 				}
-				printf("file does not exist: %s\n", file->d_name);
+				printf("file doesn't exist in source folder: %s\n", file->d_name);
 			}
 			else
 			{
@@ -135,10 +149,11 @@ void performSynchronization(char *source_path, char *destination_path, int recur
 					}
 					else
 					{
-						LOGFATAL("file doesnt exist in source folder. couldn't delete file: %s", dPath);
+						LOGFATAL("file doesnt exist in source folder. couldn't delete file: %s", dPath)
+						printf("file doesnt exist in source folder. couldn't delete file: %s\n", dPath);
 						exit(EXIT_FAILURE);
 					}
-					printf("file is old: %s\n", file->d_name);
+					printf("file doesnt exist in source folder: %s\n", file->d_name);
 				}
 				else printf("file is good: %s\n", file->d_name);
 			}
@@ -171,7 +186,7 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					setFilePath(file->d_name, destination_path, dPath);
 					if (!doesFileExist(dPath))
 					{
-						printf("creating dir: %s\n", file->d_name);
+						printf("creating directory: %s\n", file->d_name);
 						struct stat toGetModeT;
 						stat(sPath, &toGetModeT);
 						int mkdirStatus = mkdir(dPath, toGetModeT.st_mode);
@@ -182,7 +197,8 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 						}
 						else
 						{
-							LOGFATAL("couldn't create directory: %s, Stopping...", dPath)
+							LOGFATAL("Couldn't create directory: %s, Stopping...", dPath)
+							printf("Couldn't create directory: %s, Stopping...\n", dPath);
 							exit(EXIT_FAILURE);
 						}
 						//create dir
@@ -213,7 +229,8 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 					destFd = open(dPath, O_RDWR, openMode);
 					if (destFd == -1)
 					{
-						LOGFATAL("One of the files couldn't be open, stopping.")
+						LOGFATAL("File %s couldn't be open, stopping.", dPath)
+						printf("File %s couldn't be open, stopping.\n", dPath);
 						exit(EXIT_FAILURE);
 					}
 				}
@@ -236,14 +253,15 @@ void copyPasteElements(char *source_path, char *destination_path, int recursive,
 						destFd = open(dPath, O_RDWR, openMode);
 						if (destFd == -1)
 						{
-							LOGFATAL("One of the files couldn't be open, stopping.")
+							LOGFATAL("File %s couldn't be open, stopping.", dPath)
+							printf("File %s couldn't be open, stopping.\n", dPath);
 							exit(EXIT_FAILURE);
 						}
 					}
 					copyDataFromFileDesc(sourceFd, destFd, threshold);
 					closeFileDesc(destFd);
 					closeFileDesc(sourceFd);
-					printf("file Changed: %s\n", file->d_name);
+					printf("Updated file: %s\n", file->d_name);
 
 				}
 				else
