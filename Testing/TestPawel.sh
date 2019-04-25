@@ -37,7 +37,8 @@ mkdir $pth/OutputPawel/folderzpokryciem2_dest
 ### folder z pokryciem 1
 mkdir $pth/InputPawel/folderzpokryciem1_dest
 
-cp $pth/OutputPawel/folderzpokryciem1_dest/plikold_forlderzpokryciem1_dest $pth/InputPawel/folderzpokryciem1_dest/plikold_forlderzpokryciem1_dest
+cp $pth/OutputPawel/folderzpokryciem1_dest/plikold_folderzpokryciem1_dest $pth/InputPawel/folderzpokryciem1_dest/plikold_forlderzpokryciem1_dest
+echo "Some text here." > $pth/InputPawel/folderzpokryciem1_dest/plikold_folderzpokryciem1_dest
 
 touch $pth/InputPawel/folderzpokryciem1_dest/plikzpokryciem_folderzpokryciem1_dest
 cp $pth/InputPawel/folderzpokryciem1_dest/plikzpokryciem_folderzpokryciem1_dest $pth/OutputPawel/folderzpokryciem1_dest/plikzpokryciem_folderzpokryciem1_dest
